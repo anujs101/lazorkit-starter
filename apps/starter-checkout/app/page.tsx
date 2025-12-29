@@ -4,7 +4,6 @@ import './polyfills';
 import { useEffect, useMemo, useState } from 'react';
 import { useWallet } from '@lazorkit/wallet';
 import {
-  Connection,
   PublicKey,
   SystemProgram,
 } from '@solana/web3.js';
@@ -15,17 +14,12 @@ import {
   buildUsdcTransferInstructions,
   withRetry,
   getConnection,
+  USDC_MINT
 } from '@/lib/solana-utils';
 
 type UIState = 'default' | 'processing' | 'success' | 'error';
 type Currency = 'SOL' | 'USDC';
 
-const RPC_URL = 'https://api.devnet.solana.com';
-
-// Devnet USDC
-const USDC_MINT = new PublicKey(
-  '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'
-);
 
 export default function CheckoutPage() {
   const [state, setState] = useState<UIState>('default');
@@ -36,7 +30,7 @@ export default function CheckoutPage() {
   const [solBalance, setSolBalance] = useState<number | null>(null);
   const [usdcBalance, setUsdcBalance] = useState<number | null>(null);
 
-  const connection = useMemo(() => new Connection(RPC_URL), []);
+  const connection = useMemo(() => getConnection(), []);
 
   const {
     connect,
@@ -46,30 +40,30 @@ export default function CheckoutPage() {
   } = useWallet();
 
   const showConnectOverlay = !isConnected;
+    const fetchBalances = async (pubkey: PublicKey) => {
+  // SOL balance
+  const lamports = await connection.getBalance(pubkey);
+  setSolBalance(lamports / 1e9);
 
+  // USDC balance
+  const ata = await getAssociatedTokenAddress(
+    USDC_MINT,
+    pubkey,
+    true
+  );
+
+  const tokenAcc = await connection
+    .getTokenAccountBalance(ata)
+    .catch(() => null);
+
+  setUsdcBalance(tokenAcc ? Number(tokenAcc.value.uiAmount) : 0);
+};
   /* ----------------------------- Fetch balances ---------------------------- */
   useEffect(() => {
-    if (!smartWalletPubkey) return;
+  if (!smartWalletPubkey) return;
 
-    (async () => {
-      // SOL balance
-      const lamports = await connection.getBalance(smartWalletPubkey);
-      setSolBalance(lamports / 1e9);
-
-      // USDC balance
-      const ata = await getAssociatedTokenAddress(
-        USDC_MINT,
-        smartWalletPubkey,
-        true
-      );
-
-      const tokenAcc = await connection
-        .getTokenAccountBalance(ata)
-        .catch(() => null);
-
-      setUsdcBalance(tokenAcc ? Number(tokenAcc.value.uiAmount) : 0);
-    })();
-  }, [smartWalletPubkey, connection]);
+  fetchBalances(smartWalletPubkey);
+}, [smartWalletPubkey, connection]);
 
   /* ----------------------------- Handle payment ---------------------------- */
   const handlePayment = async () => {
@@ -132,6 +126,8 @@ export default function CheckoutPage() {
       });
 
       console.log('Tx signature:', signature);
+      await connection.confirmTransaction(signature, 'confirmed');
+      await fetchBalances(sender);
       setState('success');
     } catch (err) {
       console.error(err);
