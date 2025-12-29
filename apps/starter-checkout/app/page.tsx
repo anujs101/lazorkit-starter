@@ -1,65 +1,248 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import './polyfills';
+import { useEffect, useMemo, useState } from 'react';
+import { useWallet } from '@lazorkit/wallet';
+import {
+  Connection,
+  PublicKey,
+  SystemProgram,
+} from '@solana/web3.js';
+import {
+  getAssociatedTokenAddress,
+} from '@solana/spl-token';
+import {
+  buildUsdcTransferInstructions,
+  withRetry,
+  getConnection,
+} from '@/lib/solana-utils';
+
+type UIState = 'default' | 'processing' | 'success' | 'error';
+type Currency = 'SOL' | 'USDC';
+
+const RPC_URL = 'https://api.devnet.solana.com';
+
+// Devnet USDC
+const USDC_MINT = new PublicKey(
+  '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'
+);
+
+export default function CheckoutPage() {
+  const [state, setState] = useState<UIState>('default');
+  const [receiver, setReceiver] = useState('');
+  const [amount, setAmount] = useState('');
+  const [currency, setCurrency] = useState<Currency>('SOL');
+
+  const [solBalance, setSolBalance] = useState<number | null>(null);
+  const [usdcBalance, setUsdcBalance] = useState<number | null>(null);
+
+  const connection = useMemo(() => new Connection(RPC_URL), []);
+
+  const {
+    connect,
+    isConnected,
+    smartWalletPubkey,
+    signAndSendTransaction,
+  } = useWallet();
+
+  const showConnectOverlay = !isConnected;
+
+  /* ----------------------------- Fetch balances ---------------------------- */
+  useEffect(() => {
+    if (!smartWalletPubkey) return;
+
+    (async () => {
+      // SOL balance
+      const lamports = await connection.getBalance(smartWalletPubkey);
+      setSolBalance(lamports / 1e9);
+
+      // USDC balance
+      const ata = await getAssociatedTokenAddress(
+        USDC_MINT,
+        smartWalletPubkey,
+        true
+      );
+
+      const tokenAcc = await connection
+        .getTokenAccountBalance(ata)
+        .catch(() => null);
+
+      setUsdcBalance(tokenAcc ? Number(tokenAcc.value.uiAmount) : 0);
+    })();
+  }, [smartWalletPubkey, connection]);
+
+  /* ----------------------------- Handle payment ---------------------------- */
+  const handlePayment = async () => {
+    if (!receiver || !amount) {
+      alert('Missing fields');
+      return;
+    }
+
+    let recipient: PublicKey;
+    try {
+      recipient = new PublicKey(receiver);
+    } catch {
+      alert('Invalid recipient address');
+      return;
+    }
+
+    const amountNum = Number(amount);
+    if (!amountNum || amountNum <= 0) {
+      alert('Invalid amount');
+      return;
+    }
+
+    setState('processing');
+
+    try {
+      if (!smartWalletPubkey) {
+        throw new Error('Wallet not connected');
+      }
+
+      const sender = smartWalletPubkey;
+
+      const signature = await withRetry(async () => {
+        const connection = getConnection();
+
+        let instructions;
+
+        if (currency === 'USDC') {
+          instructions = await buildUsdcTransferInstructions(
+            connection,
+            sender,
+            recipient,
+            amountNum
+          );
+        } else {
+          instructions = [
+            SystemProgram.transfer({
+              fromPubkey: sender,
+              toPubkey: recipient,
+              lamports: Math.floor(amountNum * 1e9),
+            }),
+          ];
+        }
+
+        return await signAndSendTransaction({
+          instructions,
+          transactionOptions: {
+            computeUnitLimit: 200_000,
+          },
+        });
+      });
+
+      console.log('Tx signature:', signature);
+      setState('success');
+    } catch (err) {
+      console.error(err);
+      setState('error');
+    }
+  };
+
+  /* ---------------------------------- UI ---------------------------------- */
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="relative min-h-screen bg-neutral-950">
+      {/* Main Content */}
+      <div
+        className={`min-h-screen flex items-center justify-center p-4 transition-all ${
+          showConnectOverlay ? 'blur-sm pointer-events-none select-none' : ''
+        }`}
+      >
+        <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-lg p-8 space-y-6">
+          <h1 className="text-2xl font-medium text-neutral-50">
+            LazorKit Checkout
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+          {/* Balances */}
+          <div className="text-sm text-neutral-400 space-y-1">
+            <div>SOL Balance: {solBalance ?? '—'}</div>
+            <div>USDC Balance: {usdcBalance ?? '—'}</div>
+          </div>
+
+          {/* Receiver */}
+          <input
+            value={receiver}
+            onChange={(e) => setReceiver(e.target.value)}
+            placeholder="Receiver public key"
+            className="w-full bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-sm text-neutral-50"
+          />
+
+          {/* Amount */}
+          <input
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="Amount"
+            type="number"
+            className="w-full bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-sm text-neutral-50"
+          />
+
+          {/* Currency selector */}
+          <select
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as Currency)}
+            className="w-full bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-sm text-neutral-50"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <option value="SOL">SOL</option>
+            <option value="USDC">USDC</option>
+          </select>
+
+          {/* Action */}
+          {state === 'default' && (
+            <button
+              onClick={handlePayment}
+              className="w-full bg-neutral-700 hover:bg-neutral-600 text-neutral-50 py-3 rounded text-sm font-medium"
+            >
+              Pay
+            </button>
+          )}
+
+          {state === 'processing' && (
+            <div className="w-full bg-neutral-800 text-neutral-400 py-3 rounded text-sm text-center">
+              Processing…
+            </div>
+          )}
+
+          {state === 'success' && (
+            <div className="w-full bg-neutral-800 text-green-400 py-3 rounded text-sm text-center">
+              Payment successful
+            </div>
+          )}
+
+          {state === 'error' && (
+            <div className="w-full bg-neutral-800 text-red-400 py-3 rounded text-sm text-center">
+              Payment failed
+            </div>
+          )}
         </div>
-      </main>
+      </div>
+
+      {/* Connect Overlay */}
+      {showConnectOverlay && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-sm bg-neutral-900 border border-neutral-800 rounded-xl p-6 text-center space-y-4">
+            <div className="text-4xl">🔐</div>
+
+            <h2 className="text-xl font-semibold text-neutral-50">
+              Login with LazorKit Wallet
+            </h2>
+
+            <p className="text-sm text-neutral-400">
+              Connect your wallet to view balances and make payments.
+            </p>
+
+            <button
+              onClick={() => connect()}
+              className="w-full bg-neutral-700 hover:bg-neutral-600 text-neutral-50 py-3 rounded text-sm font-medium transition-colors"
+            >
+              Connect Wallet
+            </button>
+
+            <p className="text-xs text-neutral-500">
+              Secured by passkey authentication
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
