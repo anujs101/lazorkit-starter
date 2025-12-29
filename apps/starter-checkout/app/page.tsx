@@ -29,7 +29,7 @@ export default function CheckoutPage() {
 
   const [solBalance, setSolBalance] = useState<number | null>(null);
   const [usdcBalance, setUsdcBalance] = useState<number | null>(null);
-
+  const [txSignature, setTxSignature] = useState<string | null>(null);
   const connection = useMemo(() => getConnection(), []);
 
   const {
@@ -126,6 +126,7 @@ export default function CheckoutPage() {
       });
 
       console.log('Tx signature:', signature);
+      setTxSignature(signature);
       await connection.confirmTransaction(signature, 'confirmed');
       await fetchBalances(sender);
       setState('success');
@@ -199,8 +200,24 @@ export default function CheckoutPage() {
           )}
 
           {state === 'success' && (
-            <div className="w-full bg-neutral-800 text-green-400 py-3 rounded text-sm text-center">
-              Payment successful
+            <div className="space-y-3">
+              <div className="w-full bg-neutral-800 text-green-400 py-3 rounded text-sm text-center">
+                Payment successful
+              </div>
+
+              {txSignature && (
+                <button
+                  onClick={() =>
+                    window.open(
+                      `https://explorer.solana.com/tx/${txSignature}?cluster=devnet`,
+                      '_blank'
+                    )
+                  }
+                  className="w-full bg-neutral-700 hover:bg-neutral-600 text-neutral-50 py-3 rounded text-sm font-medium"
+                >
+                  View on Solana Explorer
+                </button>
+              )}
             </div>
           )}
 
