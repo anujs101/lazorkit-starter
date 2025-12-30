@@ -22,10 +22,12 @@ export default function Home() {
     signAndSendTransaction,
   } = useWallet();
 
+  const showConnectOverlay = !isConnected;
+
   const [loadingPlan, setLoadingPlan] = useState<PlanTier | null>(null);
   const [checkingSub, setCheckingSub] = useState(false);
 
-  // Memoize MERCHANT_PUBKEY to prevent issues during SSR
+  // Memoize merchant pubkey
   const MERCHANT_PUBKEY = useMemo(() => {
     if (!process.env.NEXT_PUBLIC_MERCHANT_PUBKEY) {
       console.warn('NEXT_PUBLIC_MERCHANT_PUBKEY is not defined');
@@ -39,7 +41,7 @@ export default function Home() {
     }
   }, []);
 
-  // Check existing subscription
+  /* ----------------------- Check existing subscription ---------------------- */
   useEffect(() => {
     if (!isConnected || !smartWalletPubkey) return;
 
@@ -64,25 +66,18 @@ export default function Home() {
     checkSubscription();
   }, [isConnected, smartWalletPubkey, router]);
 
+  /* ----------------------------- Subscribe flow ----------------------------- */
   const handleSubscribe = async (planTier: PlanTier) => {
-    if (!isConnected || !smartWalletPubkey) {
-      alert('Please connect your wallet first');
-      return;
-    }
-
-    if (!MERCHANT_PUBKEY) {
-      alert('Merchant configuration is missing');
-      return;
-    }
+    if (!smartWalletPubkey || !MERCHANT_PUBKEY) return;
 
     const plan = PLANS[planTier];
     setLoadingPlan(planTier);
 
     try {
-      // 1️⃣ Build instructions
       const connection = getConnection();
       const sender = new PublicKey(smartWalletPubkey);
 
+      // 1️⃣ Build USDC transfer
       const instructions = await buildUsdcTransferInstructions(
         connection,
         sender,
@@ -90,12 +85,12 @@ export default function Home() {
         plan.priceUSDC
       );
 
-      // 2️⃣ Sign & send
+      // 2️⃣ Sign + send
       const signature = await withRetry(() =>
         signAndSendTransaction({ instructions })
       );
 
-      // 3️⃣ Record subscription
+      // 3️⃣ Persist subscription
       const res = await fetch('/api/subscription/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -135,48 +130,81 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-black">
-      <div className="mx-auto max-w-7xl px-4 py-12">
-        {/* Header */}
-        <div className="mb-12 flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-white">
-              Lazorkit Subscriptions
-            </h1>
-            <p className="mt-4 max-w-2xl text-neutral-400">
-              Choose a plan and start a gasless USDC subscription using passkey wallets.
-            </p>
-          </div>
-
-          {isConnected && smartWalletPubkey ? (
-            <div className="rounded-lg border border-neutral-800 bg-neutral-900 px-6 py-4 text-right">
-              <p className="text-xs text-neutral-500">Wallet Address</p>
-              <p className="font-mono text-sm text-white">
-                {shortenAddress(smartWalletPubkey)}
+    <div className="relative min-h-screen bg-black">
+      {/* Main Content */}
+      <div
+        className={`transition-all ${
+          showConnectOverlay
+            ? 'blur-sm pointer-events-none select-none'
+            : ''
+        }`}
+      >
+        <div className="mx-auto max-w-7xl px-4 py-12">
+          {/* Header */}
+          <div className="mb-12 flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold text-white">
+                Lazorkit Subscriptions
+              </h1>
+              <p className="mt-4 max-w-2xl text-neutral-400">
+                Choose a plan and start a gasless USDC subscription using passkey wallets.
               </p>
             </div>
-          ) : (
-              <button onClick={() => connect({ feeMode: 'paymaster' })} className="rounded-lg border border-neutral-700 bg-neutral-900 px-6 py-3 text-white" >
-                Connect Wallet
-              </button> 
-          )}
-        </div>
 
-        {/* Pricing */}
-        <div className="grid gap-8 lg:grid-cols-3">
-          {Object.entries(PLANS).map(([planId, plan]) => (
-            <PlanCard
-              key={planId}
-              planId={planId as PlanTier}
-              plan={plan}
-              isConnected={isConnected}
-              isLoading={loadingPlan === planId}
-              isHighlighted={planId === 'pro'}
-              onSubscribe={handleSubscribe}
-            />
-          ))}
+            {isConnected && smartWalletPubkey && (
+              <div className="rounded-lg border border-neutral-800 bg-neutral-900 px-6 py-4 text-right">
+                <p className="text-xs text-neutral-500">Wallet Address</p>
+                <p className="font-mono text-sm text-white">
+                  {shortenAddress(smartWalletPubkey)}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Pricing */}
+          <div className="grid gap-8 lg:grid-cols-3">
+            {Object.entries(PLANS).map(([planId, plan]) => (
+              <PlanCard
+                key={planId}
+                planId={planId as PlanTier}
+                plan={plan}
+                isConnected={isConnected}
+                isLoading={loadingPlan === planId}
+                isHighlighted={planId === 'pro'}
+                onSubscribe={handleSubscribe}
+              />
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Connect Overlay (IDENTICAL to checkout) */}
+      {showConnectOverlay && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-sm bg-neutral-900 border border-neutral-800 rounded-xl p-6 text-center space-y-4">
+            <div className="text-4xl">🔐</div>
+
+            <h2 className="text-xl font-semibold text-neutral-50">
+              Login with LazorKit Wallet
+            </h2>
+
+            <p className="text-sm text-neutral-400">
+              Connect your wallet to manage your subscription.
+            </p>
+
+            <button
+              onClick={() => connect({ feeMode: 'paymaster' })}
+              className="w-full bg-neutral-700 hover:bg-neutral-600 text-neutral-50 py-3 rounded text-sm font-medium transition-colors"
+            >
+              Connect Wallet
+            </button>
+
+            <p className="text-xs text-neutral-500">
+              Secured by passkey authentication
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
