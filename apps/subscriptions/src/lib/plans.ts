@@ -16,7 +16,7 @@ export const PLANS: Record<PlanTier, Plan> = {
   basic: {
     id: 'basic',
     label: 'Basic',
-    priceUSDC: 5,
+    priceUSDC: 1,
     interval: 'monthly',
     features: [
       'Access to core features',
@@ -28,7 +28,7 @@ export const PLANS: Record<PlanTier, Plan> = {
   pro: {
     id: 'pro',
     label: 'Pro',
-    priceUSDC: 15,
+    priceUSDC: 2,
     interval: 'monthly',
     features: [
       'All Basic features',
@@ -41,7 +41,7 @@ export const PLANS: Record<PlanTier, Plan> = {
   advanced: {
     id: 'advanced',
     label: 'Advanced',
-    priceUSDC: 30,
+    priceUSDC: 3,
     interval: 'monthly',
     features: [
       'All Pro features',
