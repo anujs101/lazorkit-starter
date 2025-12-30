@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { PublicKey } from '@solana/web3.js';
 
@@ -13,10 +13,6 @@ import {
   withRetry,
 } from '@/lib/solana-utils';
 
-const MERCHANT_PUBKEY = new PublicKey(
-  process.env.NEXT_PUBLIC_MERCHANT_PUBKEY!
-);
-
 export default function Home() {
   const router = useRouter();
   const {
@@ -28,6 +24,20 @@ export default function Home() {
 
   const [loadingPlan, setLoadingPlan] = useState<PlanTier | null>(null);
   const [checkingSub, setCheckingSub] = useState(false);
+
+  // Memoize MERCHANT_PUBKEY to prevent issues during SSR
+  const MERCHANT_PUBKEY = useMemo(() => {
+    if (!process.env.NEXT_PUBLIC_MERCHANT_PUBKEY) {
+      console.warn('NEXT_PUBLIC_MERCHANT_PUBKEY is not defined');
+      return null;
+    }
+    try {
+      return new PublicKey(process.env.NEXT_PUBLIC_MERCHANT_PUBKEY);
+    } catch (err) {
+      console.error('Invalid MERCHANT_PUBKEY:', err);
+      return null;
+    }
+  }, []);
 
   // Check existing subscription
   useEffect(() => {
@@ -57,6 +67,11 @@ export default function Home() {
   const handleSubscribe = async (planTier: PlanTier) => {
     if (!isConnected || !smartWalletPubkey) {
       alert('Please connect your wallet first');
+      return;
+    }
+
+    if (!MERCHANT_PUBKEY) {
+      alert('Merchant configuration is missing');
       return;
     }
 
