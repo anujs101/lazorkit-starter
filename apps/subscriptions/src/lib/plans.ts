@@ -2,15 +2,19 @@
 
 export type PlanTier = 'basic' | 'pro' | 'advanced';
 
+export type BillingInterval = 'monthly';
+
 export interface Plan {
+  id: PlanTier;
   label: string;
   priceUSDC: number;
-  interval: 'monthly';
+  interval: BillingInterval;
   features: string[];
 }
 
 export const PLANS: Record<PlanTier, Plan> = {
   basic: {
+    id: 'basic',
     label: 'Basic',
     priceUSDC: 5,
     interval: 'monthly',
@@ -22,6 +26,7 @@ export const PLANS: Record<PlanTier, Plan> = {
   },
 
   pro: {
+    id: 'pro',
     label: 'Pro',
     priceUSDC: 15,
     interval: 'monthly',
@@ -34,6 +39,7 @@ export const PLANS: Record<PlanTier, Plan> = {
   },
 
   advanced: {
+    id: 'advanced',
     label: 'Advanced',
     priceUSDC: 30,
     interval: 'monthly',

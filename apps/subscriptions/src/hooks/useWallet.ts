@@ -9,18 +9,20 @@ export function useWallet() {
     smartWalletPubkey,
     connect,
     disconnect,
+    signAndSendTransaction,
   } = useLazorkitWallet();
 
-  // Normalize to string for UI usage
-  const publicKey = useMemo(() => {
+  // Normalize to string for UI + API usage
+  const smartWalletAddress = useMemo(() => {
     if (!smartWalletPubkey) return null;
     return smartWalletPubkey.toString();
   }, [smartWalletPubkey]);
 
   return {
     isConnected,
-    publicKey,
+    smartWalletPubkey: smartWalletAddress,
     connect,
     disconnect,
+    signAndSendTransaction,
   };
 }

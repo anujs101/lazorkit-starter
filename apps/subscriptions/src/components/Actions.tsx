@@ -3,48 +3,53 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import type { SubscriptionStatus } from '@/lib/store';
-import { useRouter } from 'next/navigation';
 
 interface ActionsProps {
+  subscriptionId: string;
   status: SubscriptionStatus;
-  planId: string;
-  onStatusChange?: () => void;
+  onActionComplete: () => void;
 }
 
-export function Actions({ status, planId, onStatusChange }: ActionsProps) {
+export function Actions({
+  subscriptionId,
+  status,
+  onActionComplete,
+}: ActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
-  const handleAction = async (action: 'pause' | 'cancel' | 'resume') => {
+  const handleAction = async (
+    action: 'pause' | 'resume' | 'cancel'
+  ) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const endpoint = action === 'resume' ? 'create' : action;
-      const response = await fetch(`/api/subscription/${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ planId }),
-      });
+      const res = await fetch(
+        `/api/subscription/${action}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscriptionId }),
+        }
+      );
 
-      if (!response.ok) {
-        throw new Error('Action failed');
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error ?? 'Action failed');
       }
 
-      onStatusChange?.();
-      router.refresh();
+      // Let parent re-fetch from backend (source of truth)
+      onActionComplete();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Something went wrong'
+      );
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleResubscribe = () => {
-    router.push('/');
   };
 
   return (
@@ -64,15 +69,16 @@ export function Actions({ status, planId, onStatusChange }: ActionsProps) {
               variant="outline"
               className="flex-1 border-neutral-700 bg-transparent text-white hover:bg-neutral-800"
             >
-              {isLoading ? 'Processing...' : 'Pause'}
+              {isLoading ? 'Processing…' : 'Pause'}
             </Button>
+
             <Button
               onClick={() => handleAction('cancel')}
               disabled={isLoading}
               variant="outline"
               className="flex-1 border-red-900/50 bg-transparent text-red-400 hover:bg-red-950/20 hover:text-red-300"
             >
-              {isLoading ? 'Processing...' : 'Cancel'}
+              {isLoading ? 'Processing…' : 'Cancel'}
             </Button>
           </>
         )}
@@ -84,25 +90,26 @@ export function Actions({ status, planId, onStatusChange }: ActionsProps) {
               disabled={isLoading}
               className="flex-1 bg-white text-black hover:bg-neutral-200"
             >
-              {isLoading ? 'Processing...' : 'Resume'}
+              {isLoading ? 'Processing…' : 'Resume'}
             </Button>
+
             <Button
               onClick={() => handleAction('cancel')}
               disabled={isLoading}
               variant="outline"
               className="flex-1 border-red-900/50 bg-transparent text-red-400 hover:bg-red-950/20 hover:text-red-300"
             >
-              {isLoading ? 'Processing...' : 'Cancel'}
+              {isLoading ? 'Processing…' : 'Cancel'}
             </Button>
           </>
         )}
 
         {status === 'CANCELLED' && (
           <Button
-            onClick={handleResubscribe}
-            className="w-full bg-white text-black hover:bg-neutral-200"
+            disabled
+            className="w-full cursor-not-allowed bg-neutral-800 text-neutral-500"
           >
-            Re-subscribe
+            Subscription Cancelled
           </Button>
         )}
       </div>

@@ -20,7 +20,7 @@ export type Subscription = {
   status: SubscriptionStatus;
 
   createdAt: number;
-  nextChargeAt: number;
+  nextChargeAt: number | null;
 };
 
 // In-memory store (demo-only, no persistence)
