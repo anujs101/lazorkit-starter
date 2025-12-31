@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-
+const CHECKOUT_URL = 'https://lazorkit-checkout.vercel.app/';
+const SUBSCRIPTION_URL = 'https://lazorkit-subscription.vercel.app/';
+const GITHUB_REPO = 'https://github.com/anujs101/lazorkit-starter';
 export default function Home() {
   const [activeNav, setActiveNav] = useState('home');
   const [copied, setCopied] = useState(false);
@@ -29,10 +31,10 @@ export default function Home() {
   }, []);
 
   const copyToClipboard = () => {
-    const code = `git clone https://github.com/lazorkit/lazorkit-starter
+    const code = `git clone https://github.com/anujs101/lazorkit-starter.git
 cd apps/starter-checkout
-pnpm install
-pnpm dev`;
+npm install
+npm run dev`;
     navigator.clipboard.writeText(code);
     setCopied(true);
     setShowToast(true);
@@ -60,9 +62,8 @@ pnpm dev`;
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <Link
-              className={`text-sm font-medium transition-all duration-200 relative py-2 group ${
-                activeNav === 'home' ? 'text-zinc-50' : 'text-zinc-400 hover:text-zinc-200'
-              }`}
+              className={`text-sm font-medium transition-all duration-200 relative py-2 group ${activeNav === 'home' ? 'text-zinc-50' : 'text-zinc-400 hover:text-zinc-200'
+                }`}
               href="#"
               onClick={() => setActiveNav('home')}
             >
@@ -72,9 +73,8 @@ pnpm dev`;
               )}
             </Link>
             <Link
-              className={`text-sm font-medium transition-all duration-200 relative py-2 group ${
-                activeNav === 'starters' ? 'text-zinc-50' : 'text-zinc-400 hover:text-zinc-200'
-              }`}
+              className={`text-sm font-medium transition-all duration-200 relative py-2 group ${activeNav === 'starters' ? 'text-zinc-50' : 'text-zinc-400 hover:text-zinc-200'
+                }`}
               href="#starters"
               onClick={() => setActiveNav('starters')}
             >
@@ -89,13 +89,15 @@ pnpm dev`;
             >
               Docs
             </Link>
-            <Link
-              className="text-zinc-400 hover:text-zinc-200 text-sm font-medium transition-all duration-200 flex items-center gap-1"
-              href="#"
+            <a
+              href={GITHUB_REPO}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-zinc-400 hover:text-zinc-200 text-sm font-medium flex items-center gap-1"
             >
               GitHub
               <span className="material-symbols-outlined text-[14px]">open_in_new</span>
-            </Link>
+            </a>
           </nav>
           <div className="flex items-center gap-4">
             <button className="flex items-center justify-center rounded-lg h-9 px-4 bg-[#4C6FFF] hover:bg-[#3E5FCC] text-white text-sm font-medium transition-all duration-200">
@@ -146,13 +148,24 @@ pnpm dev`;
               )}`}
               style={{ transitionDelay: '300ms' }}
             >
-              <button className="flex items-center justify-center rounded-lg h-11 px-6 bg-[#4C6FFF] text-white text-sm font-semibold hover:bg-[#3E5FCC] transition-all duration-200 w-full sm:w-auto">
+              <a
+                href={CHECKOUT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center rounded-lg h-11 px-6 bg-[#4C6FFF] text-white text-sm font-semibold hover:bg-[#3E5FCC] transition-all duration-200 w-full sm:w-auto"
+              >
                 View Checkout
-              </button>
-              <button className="flex items-center justify-center rounded-lg h-11 px-6 bg-zinc-900 border border-zinc-800 text-zinc-200 text-sm font-semibold hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-200 w-full sm:w-auto">
+              </a>
+
+              <a
+                href={SUBSCRIPTION_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center rounded-lg h-11 px-6 bg-zinc-900 border border-zinc-800 text-zinc-200 text-sm font-semibold hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-200 w-full sm:w-auto"
+              >
                 Subscriptions
-              </button>
-              <button className="flex items-center justify-center rounded-lg h-11 px-6 bg-transparent text-zinc-400 text-sm font-semibold hover:text-zinc-200 transition-all duration-200 w-full sm:w-auto">
+              </a>
+              <button className="flex items-center justify-center rounded-lg h-11 px-6 bg-transparent text-zinc-400 text-sm font-semibold hover:text-zinc-200 transition-all duration-200 w-full sm:w-auto" >
                 Docs
               </button>
             </div>
@@ -171,9 +184,8 @@ pnpm dev`;
                   <span className="text-xs font-mono text-zinc-500">bash</span>
                   <button
                     onClick={copyToClipboard}
-                    className={`flex items-center gap-1.5 text-xs text-zinc-400 hover:text-[#4C6FFF] transition-all duration-200 ${
-                      showCopyButton || copied ? 'opacity-100' : 'opacity-0'
-                    }`}
+                    className={`flex items-center gap-1.5 text-xs text-zinc-400 hover:text-[#4C6FFF] transition-all duration-200 ${showCopyButton || copied ? 'opacity-100' : 'opacity-0'
+                      }`}
                   >
                     <span className="material-symbols-outlined text-[16px]">
                       {copied ? 'check' : 'content_copy'}
@@ -184,7 +196,7 @@ pnpm dev`;
                 <div className="p-6 text-left font-mono text-[13px] leading-7 text-zinc-300 overflow-x-auto">
                   <div className="flex gap-3">
                     <span className="text-zinc-600 select-none">$</span>
-                    <span className="text-zinc-400">git clone https://github.com/lazorkit/lazorkit-starter</span>
+                    <span className="text-zinc-400">git clone https://github.com/anujs101/lazorkit-starter.git</span>
                   </div>
                   <div className="flex gap-3">
                     <span className="text-zinc-600 select-none">$</span>
@@ -192,11 +204,11 @@ pnpm dev`;
                   </div>
                   <div className="flex gap-3">
                     <span className="text-zinc-600 select-none">$</span>
-                    <span className="text-zinc-400">pnpm install</span>
+                    <span className="text-zinc-400">npm install</span>
                   </div>
                   <div className="flex gap-3">
                     <span className="text-zinc-600 select-none">$</span>
-                    <span className="text-zinc-400">pnpm dev</span>
+                    <span className="text-zinc-400">npm run dev</span>
                   </div>
                 </div>
               </div>
@@ -238,13 +250,23 @@ pnpm dev`;
                       apps/starter-checkout
                     </div>
                     <div className="flex gap-2">
-                      <button className="flex-1 h-9 rounded bg-[#4C6FFF] text-white text-xs font-semibold hover:bg-[#3E5FCC] transition-all duration-200">
+                      <a
+                        href={CHECKOUT_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 h-9 rounded bg-[#4C6FFF] text-white text-xs font-semibold hover:bg-[#3E5FCC] transition-all duration-200 flex items-center justify-center"
+                      >
                         Demo
-                      </button>
-                      <button className="h-9 px-3 rounded border border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5">
+                      </a>
+                      <a
+                        href={`${GITHUB_REPO}/tree/main/apps/starter-checkout`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="h-9 px-3 rounded border border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5"
+                      >
                         <span className="material-symbols-outlined text-[16px]">folder_open</span>
                         Source
-                      </button>
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -272,13 +294,23 @@ pnpm dev`;
                       apps/starter-subscription
                     </div>
                     <div className="flex gap-2">
-                      <button className="flex-1 h-9 rounded bg-[#4C6FFF] text-white text-xs font-semibold hover:bg-[#3E5FCC] transition-all duration-200">
+                      <a
+                        href={SUBSCRIPTION_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 h-9 rounded bg-[#4C6FFF] text-white text-xs font-semibold hover:bg-[#3E5FCC] transition-all duration-200 flex items-center justify-center"
+                      >
                         Demo
-                      </button>
-                      <button className="h-9 px-3 rounded border border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5">
+                      </a>
+                      <a
+                        href={`${GITHUB_REPO}/tree/main/apps/subscriptions`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="h-9 px-3 rounded border border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5"
+                      >
                         <span className="material-symbols-outlined text-[16px]">folder_open</span>
                         Source
-                      </button>
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -434,9 +466,14 @@ pnpm dev`;
               <Link className="text-zinc-500 hover:text-zinc-300 transition-colors duration-200 text-sm font-medium" href="/docs">
                 Docs
               </Link>
-              <Link className="text-zinc-500 hover:text-zinc-300 transition-colors duration-200 text-sm font-medium" href="#">
+              <a
+                className="text-zinc-500 hover:text-zinc-300 transition-colors duration-200 text-sm font-medium"
+                href={GITHUB_REPO}
+                target="_blank"
+              >
                 GitHub
-              </Link>
+                <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+              </a>
               <Link className="text-zinc-500 hover:text-zinc-300 transition-colors duration-200 text-sm font-medium" href="#">
                 Twitter
               </Link>
