@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Lazorkit – Passkey Checkout Demo',
-  description: 'Premium checkout experience using Lazorkit',
+  description: 'Keyless, gasless Solana checkout using passkeys and Lazorkit',
 };
 
 export default function RootLayout({
