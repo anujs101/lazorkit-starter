@@ -1,10 +1,11 @@
 'use client';
 
 import './polyfills';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useWallet as useLazorkitWallet } from '@lazorkit/wallet';
 import { useWallet as useAdapterWallet } from '@solana/wallet-adapter-react';
-import { OtherWalletDropdown} from "@/components/wallet/OtherWalletDropdown"
+import { OtherWalletDropdown } from '@/components/wallet/OtherWalletDropdown';
+
 import {
   PublicKey,
   SystemProgram,
@@ -44,11 +45,11 @@ export default function CheckoutPage() {
   } = useLazorkitWallet();
 
   /* ------------------------- Adapter wallets ------------------------- */
-const {
-  publicKey: adapterPubkey,
-  connected: isAdapterConnected,
-  sendTransaction,
-} = useAdapterWallet();
+  const {
+    publicKey: adapterPubkey,
+    connected: isAdapterConnected,
+    sendTransaction,
+  } = useAdapterWallet();
 
   /* ----------------------- Unified connection ----------------------- */
   const activePubkey = smartWalletPubkey ?? adapterPubkey;
@@ -58,27 +59,41 @@ const {
   const showConnectOverlay = !isConnected;
 
   /* -------------------------- Fetch balances ------------------------- */
-  const fetchBalances = async (pubkey: PublicKey) => {
-    const lamports = await connection.getBalance(pubkey);
-    setSolBalance(lamports / 1e9);
+  const fetchBalances = useCallback(
+    async (pubkey: PublicKey) => {
+      const lamports = await connection.getBalance(pubkey);
+      setSolBalance(lamports / 1e9);
 
-    const ata = await getAssociatedTokenAddress(
-      USDC_MINT,
-      pubkey,
-      true
-    );
+      const ata = await getAssociatedTokenAddress(
+        USDC_MINT,
+        pubkey,
+        true
+      );
 
-    const tokenAcc = await connection
-      .getTokenAccountBalance(ata)
-      .catch(() => null);
+      const tokenAcc = await connection
+        .getTokenAccountBalance(ata)
+        .catch(() => null);
 
-    setUsdcBalance(tokenAcc ? Number(tokenAcc.value.uiAmount) : 0);
-  };
+      setUsdcBalance(tokenAcc ? Number(tokenAcc.value.uiAmount) : 0);
+    },
+    [connection]
+  );
 
   useEffect(() => {
     if (!activePubkey) return;
-    fetchBalances(activePubkey);
-  }, [activePubkey, connection]);
+
+    let cancelled = false;
+
+    (async () => {
+      if (!cancelled) {
+        await fetchBalances(activePubkey);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activePubkey, fetchBalances]);
 
   /* ----------------------------- Payment ----------------------------- */
   const handlePayment = async () => {
