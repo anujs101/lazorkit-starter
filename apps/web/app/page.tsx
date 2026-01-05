@@ -165,9 +165,13 @@ npm run dev`;
               >
                 Subscriptions
               </a>
-              <button className="flex items-center justify-center rounded-lg h-11 px-6 bg-transparent text-zinc-400 text-sm font-semibold hover:text-zinc-200 transition-all duration-200 w-full sm:w-auto" >
+              <a
+                href="/docs"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center rounded-lg h-11 px-6 bg-transparent text-zinc-400 text-sm font-semibold hover:text-zinc-200 transition-all duration-200 w-full sm:w-auto" >
                 Docs
-              </button>
+              </a>
             </div>
             <div
               className={`w-full max-w-[720px] mx-auto transition-all duration-400 ease-out ${getAnimationClass(
@@ -460,7 +464,7 @@ npm run dev`;
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-8 pb-8 border-b border-zinc-800">
             <div>
               <h3 className="text-zinc-50 font-semibold mb-1">LazorKit</h3>
-              <p className="text-zinc-500 text-sm">Gasless payments on Solana.</p>
+              <p className="text-zinc-500 text-sm">Smart Wallets. Powered by Passkeys.</p>
             </div>
             <nav className="flex items-center gap-6">
               <Link className="text-zinc-500 hover:text-zinc-300 transition-colors duration-200 text-sm font-medium" href="/docs">
@@ -474,13 +478,13 @@ npm run dev`;
                 GitHub
                 <span className="material-symbols-outlined text-[14px]">open_in_new</span>
               </a>
-              <Link className="text-zinc-500 hover:text-zinc-300 transition-colors duration-200 text-sm font-medium" href="#">
+              <Link className="text-zinc-500 hover:text-zinc-300 transition-colors duration-200 text-sm font-medium" href="https://x.com/anujs101">
                 Twitter
               </Link>
             </nav>
           </div>
           <div className="text-zinc-600 text-xs">
-            © 2024 LazorKit. MIT License.
+            © 2026 LazorKit. MIT License.
           </div>
         </div>
       </footer>
