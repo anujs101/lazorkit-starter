@@ -31,7 +31,7 @@ export function WalletStatusCard() {
 
       // USDC
       try {
-        const ata = await getAssociatedTokenAddress(USDC_MINT, pubkey);
+        const ata = await getAssociatedTokenAddress(USDC_MINT, pubkey, true);
         const usdc = await connection.getTokenAccountBalance(ata);
         setUsdcBalance(Number(usdc.value.uiAmount));
       } catch {
