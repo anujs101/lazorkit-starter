@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Space_Grotesk, JetBrains_Mono } from 'next/font/google';
+import { Providers } from './providers';
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -16,23 +17,26 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: 'LazorKit - Gasless Solana Starter Templates',
-  description: 'Production-ready templates for USDC checkout and subscriptions on Solana. Passkey auth, no seed phrases, gasless for users.',
+  description:
+    'Production-ready templates for USDC checkout and subscriptions on Solana. Passkey auth, no seed phrases, gasless for users.',
   openGraph: {
     title: 'LazorKit - Gasless Solana Starter Templates',
-    description: 'Production-ready templates for USDC checkout and subscriptions on Solana. Passkey auth, no seed phrases, gasless for users.',
+    description:
+      'Production-ready templates for USDC checkout and subscriptions on Solana. Passkey auth, no seed phrases, gasless for users.',
     images: [
       {
-        url: 'https://bolt.new/static/og_default.png',
+        url: 'apps/web/app/homepage.png',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'LazorKit - Gasless Solana Starter Templates',
-    description: 'Production-ready templates for USDC checkout and subscriptions on Solana. Passkey auth, no seed phrases, gasless for users.',
+    description:
+      'Production-ready templates for USDC checkout and subscriptions on Solana. Passkey auth, no seed phrases, gasless for users.',
     images: [
       {
-        url: 'https://bolt.new/static/og_default.png',
+        url: 'apps/web/app/homepage.png',
       },
     ],
   },
@@ -51,8 +55,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} font-display bg-zinc-950 text-zinc-50 min-h-screen flex flex-col overflow-x-hidden antialiased`}>
-        {children}
+      <body
+        className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} font-display bg-zinc-950 text-zinc-50 min-h-screen flex flex-col overflow-x-hidden antialiased`}
+      >
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

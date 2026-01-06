@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import ConnectButton from './connectButton';
 const CHECKOUT_URL = 'https://lazorkit-checkout.vercel.app/';
 const SUBSCRIPTION_URL = 'https://lazorkit-subscription.vercel.app/';
 const GITHUB_REPO = 'https://github.com/anujs101/lazorkit-starter';
@@ -100,11 +101,8 @@ npm run dev`;
             </a>
           </nav>
           <div className="flex items-center gap-4">
-            <button className="flex items-center justify-center rounded-lg h-9 px-4 bg-[#4C6FFF] hover:bg-[#3E5FCC] text-white text-sm font-medium transition-all duration-200">
-              <span className="mr-2 material-symbols-outlined text-[18px]">account_balance_wallet</span>
-              <span>Connect</span>
-            </button>
-          </div>
+          <ConnectButton />
+        </div>
         </div>
       </header>
 
