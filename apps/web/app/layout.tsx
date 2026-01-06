@@ -25,7 +25,7 @@ export const metadata: Metadata = {
       'Production-ready templates for USDC checkout and subscriptions on Solana. Passkey auth, no seed phrases, gasless for users.',
     images: [
       {
-        url: 'apps/web/app/homepage.png',
+        url: 'https://res.cloudinary.com/dfbvndxhf/image/upload/v1767706480/homepage_pbplz4.png',
       },
     ],
   },
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
       'Production-ready templates for USDC checkout and subscriptions on Solana. Passkey auth, no seed phrases, gasless for users.',
     images: [
       {
-        url: 'apps/web/app/homepage.png',
+        url: 'https://res.cloudinary.com/dfbvndxhf/image/upload/v1767706480/homepage_pbplz4.png',
       },
     ],
   },
