@@ -2,10 +2,9 @@
 
 import { useWallet } from '@lazorkit/wallet';
 
-export default function ConnectButton() {
+export default function ConnectButton({ onConnectClick }: { onConnectClick: () => void }) {
   const {
     connect,
-    disconnect,
     isConnected,
     smartWalletPubkey,
     isConnecting,
@@ -16,7 +15,7 @@ export default function ConnectButton() {
       if (!isConnected) {
         await connect();
       } else {
-        await disconnect();
+        onConnectClick();
       }
     } catch (err) {
       console.error('Wallet error:', err);

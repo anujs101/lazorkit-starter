@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useWallet } from '@lazorkit/wallet';
 import ConnectButton from './connectButton';
+import { WalletStatusCard } from './WalletStatusCard';
 const CHECKOUT_URL = 'https://lazorkit-checkout.vercel.app/';
 const SUBSCRIPTION_URL = 'https://lazorkit-subscription.vercel.app/';
 const GITHUB_REPO = 'https://github.com/anujs101/lazorkit-starter';
@@ -12,6 +14,8 @@ export default function Home() {
   const [showCopyButton, setShowCopyButton] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
+  const [showWalletStatus, setShowWalletStatus] = useState(false);
+  const { isConnected } = useWallet();
 
   useEffect(() => {
     const sections = document.querySelectorAll('[data-animate]');
@@ -30,6 +34,12 @@ export default function Home() {
     sections.forEach((section) => observer.observe(section));
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (!isConnected) {
+      setShowWalletStatus(false);
+    }
+  }, [isConnected]);
 
   const copyToClipboard = () => {
     const code = `git clone https://github.com/anujs101/lazorkit-starter.git
@@ -100,12 +110,12 @@ npm run dev`;
               <span className="material-symbols-outlined text-[14px]">open_in_new</span>
             </a>
           </nav>
-          <div className="flex items-center gap-4">
-          <ConnectButton />
+          <div className="flex flex-col items-end gap-2 self-start mt-4">
+            <ConnectButton onConnectClick={() => setShowWalletStatus((prev) => !prev)} />
+            {showWalletStatus && <WalletStatusCard />}
+          </div>
         </div>
-        </div>
-      </header>
-
+      </header>                
       <main className="flex-grow pt-24 pb-16 px-6">
         <div className="max-w-[1000px] mx-auto flex flex-col">
           <section
