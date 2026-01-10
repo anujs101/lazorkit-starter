@@ -71,6 +71,7 @@ export default function DocsPage() {
 
   const navItems = [
     { id: 'introduction', label: 'Introduction' },
+    { id: 'how-it-works', label: 'How It Works' },
     { id: 'project-structure', label: 'Project Structure' },
     { id: 'starter-templates', label: 'Starter Templates' },
     { id: 'checkout', label: 'Checkout' },
@@ -200,14 +201,65 @@ export default function DocsPage() {
                 <h2 className="text-2xl font-bold text-zinc-50 mb-4">Introduction</h2>
                 <div className="space-y-4 text-zinc-400 leading-relaxed">
                   <p>
-                    LazorKit is a collection of production-ready starter templates for building gasless payment flows on Solana. These templates are designed for developers who want to accept USDC payments without requiring users to manage SOL or seed phrases.
+                    LazorKit starters are opinionated, production-ready templates for building payment flows on Solana without exposing users to wallets, seed phrases, or gas tokens.
                   </p>
                   <p>
-                    This repository is for developers building real applications. The starters are meant to be extended and customized, not copied blindly. Each template includes working implementations of complex flows like checkout, subscriptions, and wallet integration.
+                    These templates are designed for teams who want blockchain-backed payments with a Web2-level user experience. Users authenticate using passkeys (biometrics), transactions are executed via smart wallets, and network fees are fully sponsored.
                   </p>
                   <p>
-                    All templates use passkey-based authentication for a Web2-like user experience while maintaining blockchain security. Users authenticate with biometrics and pay with USDC directly—no wallet setup, no gas tokens, no friction.
+                    LazorKit starters are not just SDK demos. They are meant to be copied, modified, and can be shipped as real products. You are expected to adapt the UI, backend logic, and payment flows to fit your application’s needs.
                   </p>
+                  <p className="text-sm text-zinc-500 border-l-2 border-zinc-800 pl-4 py-2">
+                    If you need low-level control over wallets, signatures, or custom on-chain programs, these starters may not be the right fit. They intentionally trade flexibility for speed and UX simplicity.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section id="how-it-works" className="mb-20" data-animate="how-it-works">
+              <div className={`transition-all duration-300 ease-out ${getAnimationClass('how-it-works')}`}>
+                <h2 className="text-2xl font-bold text-zinc-50 mb-4">How It Works</h2>
+                <div className="space-y-4 text-zinc-400 leading-relaxed">
+                  <p>
+                    LazorKit starters follow a consistent flow that abstracts away traditional wallet UX while keeping transactions fully on-chain.
+                  </p>
+
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-3 text-sm">
+                    <div className="flex items-start gap-3">
+                      <span className="text-[#4C6FFF] font-mono text-xs mt-1">1</span>
+                      <p>
+                        The user clicks <span className="text-zinc-300 font-medium">Connect</span> and authenticates using a passkey (Touch ID, Face ID, or platform biometric).
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-[#4C6FFF] font-mono text-xs mt-1">2</span>
+                      <p>
+                        A smart wallet is created or restored on Solana, with the passkey acting as the signing authority. No private keys or seed phrases are exposed.
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-[#4C6FFF] font-mono text-xs mt-1">3</span>
+                      <p>
+                        When a payment is initiated, the application constructs a transaction client-side and requests the user’s passkey signature.
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-[#4C6FFF] font-mono text-xs mt-1">4</span>
+                      <p>
+                        The signed transaction is sent to a paymaster service, which sponsors the network fees and submits it to the Solana RPC.
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-[#4C6FFF] font-mono text-xs mt-1">5</span>
+                      <p>
+                        The application monitors confirmation status and updates the UI with success or failure states.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* <p className="text-sm text-zinc-500 border-l-2 border-zinc-800 pl-4 py-2">
+                    Passkeys are domain-bound. Wallets created on localhost, staging, and production are treated as separate wallets by the browser.
+                  </p> */}
                 </div>
               </div>
             </section>
@@ -219,38 +271,58 @@ export default function DocsPage() {
                 <h2 className="text-2xl font-bold text-zinc-50 mb-4">Project Structure</h2>
                 <div className="space-y-4 text-zinc-400 leading-relaxed">
                   <p>
-                    The repository is organized as a monorepo with independent Next.js applications and shared packages.
+                    LazorKit uses a monorepo only for distribution and maintenance. You are not expected to run or deploy the entire repository as a single application.
                   </p>
+
+                  <p>
+                    Each starter inside <span className="font-mono text-zinc-300">apps/</span> is a fully independent Next.js app. The recommended workflow is to copy one starter, customize it, and deploy it as its own product.
+                  </p>
+
                   <CodeBlock
                     id="structure"
                     code={`apps/
-  starter-checkout/       # USDC checkout flow with QR codes
-  starter-subscription/   # Recurring payments with scheduled transactions
-packages/
-  ui/                     # Shared UI components (optional)`}
+  starter-checkout/        # One-time USDC payments
+  starter-subscription/   # Recurring USDC payments
+  web/                    # Marketing site and documentation`}
                   />
+
                   <div className="space-y-3">
                     <div>
                       <p className="text-zinc-50 font-medium mb-1">apps/starter-checkout/</p>
                       <p className="text-sm">
-                        Complete checkout implementation with transaction tracking, QR code generation, and receipt handling. Copy this entire app to start building a payment flow.
+                        Implements a complete one-time payment flow. This includes wallet connection,
+                        transaction construction, gasless execution, confirmation tracking, and UI
+                        states for success and failure.
+                      </p>
+                      <p className="text-sm text-zinc-500 mt-1">
+                        Use this if you need payments similar to Stripe Checkout or PayPal buttons.
                       </p>
                     </div>
+
                     <div>
                       <p className="text-zinc-50 font-medium mb-1">apps/starter-subscription/</p>
                       <p className="text-sm">
-                        Subscription billing without cron jobs. Uses scheduled transactions from authorized smart wallets. Copy this for recurring payment features.
+                        Implements recurring payments using delegated smart-wallet permissions and
+                        scheduled transactions. Users authorize spending once, and payments execute
+                        automatically on a fixed interval.
+                      </p>
+                      <p className="text-sm text-zinc-500 mt-1">
+                        Use this if you are building SaaS-style subscriptions or memberships.
                       </p>
                     </div>
+
                     <div>
-                      <p className="text-zinc-50 font-medium mb-1">packages/ui/</p>
+                      <p className="text-zinc-50 font-medium mb-1">apps/web/</p>
                       <p className="text-sm">
-                        Optional shared components. You can ignore this if you're only using one starter.
+                        Contains the landing page and documentation. This app is not required for using
+                        or deploying any starter.
                       </p>
                     </div>
                   </div>
+
                   <p className="text-sm text-zinc-500 border-l-2 border-zinc-800 pl-4 py-2">
-                    Each starter is a standalone Next.js app. You can copy just one app and deploy it independently. The monorepo structure is for organizational purposes only.
+                    You can safely delete every app except the one you plan to use. There are no shared
+                    runtime dependencies between starters.
                   </p>
                 </div>
               </div>
@@ -263,39 +335,66 @@ packages/
                 <h2 className="text-2xl font-bold text-zinc-50 mb-4">Starter Templates</h2>
                 <div className="space-y-4 text-zinc-400 leading-relaxed">
                   <p>
-                    Each starter template solves a specific payment use case. They share the same wallet integration and paymaster setup but differ in their transaction flows and UI patterns.
+                    LazorKit starter templates are opinionated application skeletons. Each one represents
+                    a complete payment product, not a collection of isolated examples.
                   </p>
+
+                  <p>
+                    All starters share the same wallet abstraction, gasless transaction flow, and network
+                    assumptions. They differ only in how transactions are initiated and executed.
+                  </p>
+
                   <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-3">
-                    <h3 className="text-zinc-50 font-semibold">What's Included in Every Starter</h3>
+                    <h3 className="text-zinc-50 font-semibold">What Every Starter Includes</h3>
                     <ul className="space-y-2 text-sm">
                       <li className="flex items-start gap-2">
                         <span className="material-symbols-outlined text-[#4C6FFF] text-[18px] mt-0.5">
                           check_circle
                         </span>
-                        <span>Passkey-based wallet creation and connection</span>
+                        <span>Passkey-based smart wallet creation and restoration</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="material-symbols-outlined text-[#4C6FFF] text-[18px] mt-0.5">
                           check_circle
                         </span>
-                        <span>Gasless transactions via integrated paymaster</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="material-symbols-oriented text-[#4C6FFF] text-[18px] mt-0.5">
-                          check_circle
-                        </span>
-                        <span>USDC payment flows on Devnet</span>
+                        <span>Gasless USDC transactions via a paymaster</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="material-symbols-outlined text-[#4C6FFF] text-[18px] mt-0.5">
                           check_circle
                         </span>
-                        <span>Transaction status monitoring and error handling</span>
+                        <span>Client-side transaction construction and simulation</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="material-symbols-outlined text-[#4C6FFF] text-[18px] mt-0.5">
+                          check_circle
+                        </span>
+                        <span>Real-time confirmation tracking and error handling</span>
                       </li>
                     </ul>
                   </div>
-                  <p className="text-sm text-zinc-500">
-                    All starters assume Devnet and USDC. You'll need to customize network configuration and token addresses for mainnet deployment.
+
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-zinc-50 font-medium mb-1">What These Starters Assume</p>
+                      <p className="text-sm">
+                        Users will not install browser wallets, manage seed phrases, or hold SOL.
+                        All interactions are mediated through passkeys and smart wallets.
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-zinc-50 font-medium mb-1">What They Intentionally Exclude</p>
+                      <p className="text-sm">
+                        These starters do not include fiat on-ramps, KYC flows, invoicing systems,
+                        or accounting logic. They focus strictly on on-chain USDC/Sol payments.
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-zinc-500 border-l-2 border-zinc-800 pl-4 py-2">
+                    Treat each starter as a foundation, not a finished product. You are expected to
+                    replace the UI, connect your backend, and define your own business logic.
                   </p>
                 </div>
               </div>
@@ -308,49 +407,126 @@ packages/
                 <h2 className="text-2xl font-bold text-zinc-50 mb-4">Checkout</h2>
                 <div className="space-y-4 text-zinc-400 leading-relaxed">
                   <p>
-                    The checkout starter implements a complete one-time payment flow. Users can pay via connected wallet or by scanning a QR code. Transaction status is tracked in real-time with proper error handling.
+                    The Checkout starter demonstrates a fully client-side, one-time payment flow built
+                    on Solana using LazorKit smart wallets and standard Solana wallets.
                   </p>
-                  <div className="space-y-3">
+
+                  <p>
+                    This example intentionally avoids backend services and server-side
+                    verification to keep the payment logic explicit and easy to understand.
+                  </p>
+
+                  <div className="space-y-6">
                     <div>
-                      <p className="text-zinc-50 font-medium mb-1">What Problem It Solves</p>
-                      <p className="text-sm">
-                        Accepting crypto payments without forcing users to manage gas tokens or deal with wallet setup friction. The flow feels like PayPal or Stripe, not a blockchain transaction.
-                      </p>
+                      <h3 className="text-zinc-50 font-semibold mb-2">End-to-End Flow</h3>
+                      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-3 text-sm">
+                        <div className="flex items-start gap-3">
+                          <span className="text-[#4C6FFF] font-mono text-xs mt-1">1</span>
+                          <p>
+                            The user lands on the checkout page. If no wallet is connected, a connect
+                            overlay is displayed.
+                          </p>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <span className="text-[#4C6FFF] font-mono text-xs mt-1">2</span>
+                          <p>
+                            The user connects using LazorKit (passkey-based, gasless) or a standard
+                            Solana wallet via the adapter dropdown.
+                          </p>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <span className="text-[#4C6FFF] font-mono text-xs mt-1">3</span>
+                          <p>
+                            Once connected, the application fetches SOL and USDC balances directly
+                            from the Solana RPC.
+                          </p>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <span className="text-[#4C6FFF] font-mono text-xs mt-1">4</span>
+                          <p>
+                            The user enters a recipient public key, amount, and selects SOL or USDC
+                            as the payment currency.
+                          </p>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <span className="text-[#4C6FFF] font-mono text-xs mt-1">5</span>
+                          <p>
+                            On clicking <span className="text-zinc-300 font-medium">Pay</span>, the app
+                            builds transfer instructions locally and signs the transaction with the
+                            active wallet.
+                          </p>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <span className="text-[#4C6FFF] font-mono text-xs mt-1">6</span>
+                          <p>
+                            If LazorKit is used, the transaction is sent gaslessly via
+                            <span className="text-zinc-300 font-medium"> signAndSendTransaction</span>.
+                            Standard wallets pay network fees.
+                          </p>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <span className="text-[#4C6FFF] font-mono text-xs mt-1">7</span>
+                          <p>
+                            The app waits for confirmation, refreshes balances, and renders success
+                            or error states in the UI.
+                          </p>
+                        </div>
+                      </div>
                     </div>
+
                     <div>
-                      <p className="text-zinc-50 font-medium mb-1">Key Features</p>
-                      <ul className="space-y-1.5 text-sm">
+                      <h3 className="text-zinc-50 font-semibold mb-2">Key Files and Responsibilities</h3>
+                      <ul className="space-y-2 text-sm">
                         <li className="flex items-start gap-2">
-                          <span className="text-[#4C6FFF]">•</span>
-                          <span>QR code generation for mobile payments</span>
+                          <span className="text-[#4C6FFF]">→</span>
+                          <span>
+                            <span className="font-mono text-zinc-300">app/page.tsx</span> –
+                            Checkout UI, wallet connection, balance fetching, and payment execution
+                          </span>
                         </li>
                         <li className="flex items-start gap-2">
-                          <span className="text-[#4C6FFF]">•</span>
-                          <span>Real-time transaction confirmation</span>
+                          <span className="text-[#4C6FFF]">→</span>
+                          <span>
+                            <span className="font-mono text-zinc-300">lib/solana-utils.ts</span> –
+                            RPC helpers, retry logic, and USDC transfer instruction construction
+                          </span>
                         </li>
                         <li className="flex items-start gap-2">
-                          <span className="text-[#4C6FFF]">•</span>
-                          <span>Digital receipt generation</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-[#4C6FFF]">•</span>
-                          <span>ATA creation handled automatically</span>
+                          <span className="text-[#4C6FFF]">→</span>
+                          <span>
+                            <span className="font-mono text-zinc-300">components/wallet/</span> –
+                            Wallet selection UI for non-LazorKit wallets
+                          </span>
                         </li>
                       </ul>
                     </div>
+
                     <div>
-                      <p className="text-zinc-50 font-medium mb-1">What to Customize</p>
-                      <p className="text-sm">
-                        You'll need to customize the payment amount logic, merchant address, receipt design, and post-payment flow (order confirmation, fulfillment triggers, etc.).
-                      </p>
+                      <h3 className="text-zinc-50 font-semibold mb-2">Important Characteristics</h3>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">
+                          <span className="text-[#4C6FFF]">•</span>
+                          <span>Entirely client-side, no backend or API routes involved</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-[#4C6FFF]">•</span>
+                          <span>Supports both gasless (LazorKit) and standard gas-paying wallets</span>
+                        </li>
+                      </ul>
                     </div>
                   </div>
-                  <CodeBlock
-                    id="checkout-install"
-                    code={`$ cd apps/starter-checkout
-$ npm install
-$ npm run dev`}
-                  />
+
+                  <p className="text-sm text-zinc-500 border-l-2 border-zinc-800 pl-4 py-2">
+                    This starter demonstrates wallet abstraction and gasless execution.
+                    For production use, you must add server-side validation, fulfillment logic,
+                    and transaction verification.
+                  </p>
                 </div>
               </div>
             </section>
